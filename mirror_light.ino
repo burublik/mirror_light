@@ -1,4 +1,7 @@
+
+#include <ChainableLED.h>
 #include <avr/interrupt.h>
+#include <avr/power.h>
 #include <avr/sleep.h>
 
 // Used pins
@@ -7,6 +10,10 @@
 #define DEBOUNCE_MS 200
 #define DIMM_DEBOUNCE_MS 1000
 #define DIMMING_STEP_MS 100
+#define LED_DIM   9
+#define MIN_BRIGHTNESS  0
+#define MAX_BRIGHTNESS 255
+#define NUM_LEDS  1
 
 enum commands {
   DO_NOTHING = 0,
@@ -27,6 +34,8 @@ volatile commands previous_gear = LED_OFF;
 
 volatile dim_direction dim = DOWN;
 volatile long brightness = 0xFF;
+
+ChainableLED leds(7, 8, NUM_LEDS);
 
 void loop()
 {
@@ -55,6 +64,7 @@ void loop()
 }
 void setup()
 {
+  leds.init();
   Serial.begin(9600);
   pinMode(led1,OUTPUT);
   pinMode(TOUCH_PIN, INPUT_PULLUP);
@@ -64,6 +74,7 @@ void setup()
 
 void switch_led_on(){
   digitalWrite(led1,HIGH);
+  writeLED(brightness);
   previous_gear = LED_ON;
   Serial.println("-------------DO NOTHING--------");
   current_gear = DO_NOTHING;
@@ -72,6 +83,7 @@ void switch_led_on(){
 
 void switch_led_off(){
   digitalWrite(led1,LOW);
+  writeLED(MIN_BRIGHTNESS);
   previous_gear = LED_OFF;
   Serial.println("-------------DO NOTHING--------");
   current_gear = DO_NOTHING;
@@ -113,18 +125,18 @@ void dimming_led () {
   while(digitalRead(TOUCH_PIN) == 0) {
     if (dim == DOWN) {
       brightness = brightness - 5;
-      if (brightness == 0) {
+      if (brightness == MIN_BRIGHTNESS) {
         dim = UP;
       }
     } else if (dim == UP){
         brightness = brightness + 5;
-        if (brightness == 255){
+        if (brightness == MAX_BRIGHTNESS){
         dim = DOWN;
       }
     }
   Serial.println(brightness);
+  writeLED(brightness);
   delay(DIMMING_STEP_MS);
-  //TODO: send brightness
   }
   if (dim == UP){
     dim = DOWN;
@@ -135,12 +147,18 @@ void dimming_led () {
   enable_touch_interrupt();
 }
 
+void writeLED(long bright){
+    analogWrite(LED_DIM, bright);
+    leds.setColorRGB(NUM_LEDS, bright, 0, 0);
+}
+
 void sleep_now()         // here we put the arduino to sleep
 {
     Serial.println("-------------SLEEP NOW---------");
     delay(100);
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);   // sleep mode is set here
-    sleep_enable();          
+    sleep_enable();
+    power_timer2_enable();          
     sleep_mode();
     sleep_disable();         
     Serial.println("-------------WAKING UP---------");
