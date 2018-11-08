@@ -149,7 +149,7 @@ void dimming_led () {
 
 void writeLED(long bright){
     analogWrite(LED_DIM, bright);
-    leds.setColorRGB(NUM_LEDS, bright, 0, 0);
+    leds.setColorRGB(NUM_LEDS, bright, bright, bright);
 }
 
 void sleep_now()         // here we put the arduino to sleep
