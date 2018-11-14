@@ -31,7 +31,7 @@ enum dim_direction {
 
 const int led1 = LED_PIN;
 volatile commands current_gear = DO_NOTHING;
-volatile commands previous_gear = LED_OFF;
+volatile commands previous_gear = LED_ON;
 
 volatile dim_direction dim = DOWN;
 volatile byte brightness = 0xFF;
@@ -73,7 +73,7 @@ void setup()
 void LED_strip_init() {
   pinMode(LED_DATA, OUTPUT);
   pinMode(LED_CLK, OUTPUT);
-  send_RGB(MIN_BRIGHTNESS);  
+  send_RGB(MAX_BRIGHTNESS);  
 }
 
 void send_RGB (byte bright){
