@@ -8,10 +8,16 @@
 #define TOUCH_PIN  2
 #define DEBOUNCE_MS 200
 #define DIMM_DEBOUNCE_MS 1000
-#define DIMMING_STEP_MS 100
-#define LED_DIM   9
-#define MIN_BRIGHTNESS  0
+#define DIMMING_LARGE_STEP 5
+#define DIMMING_SHORT_STEP 1
+#define DIMMING_STEP_MS 20
+#define DIMMING_SHORT_MS 4
+#define DIMMING_MIN_STOP_MS 500
+#define LED_DIM 9
+#define BRIGHTNESS_OFF  0
+#define MIN_BRIGHTNESS  10
 #define MAX_BRIGHTNESS 255
+#define BRIGHTNESS_THRESHOLD 80
 #define NUM_LEDS  1
 #define LED_DATA 12
 #define LED_CLK 13
@@ -67,7 +73,7 @@ void setup() {
 }
 
 void system_init() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   pinMode(led1, OUTPUT);
   pinMode(TOUCH_PIN, INPUT_PULLUP);
   delay(100);
@@ -104,7 +110,7 @@ void switch_led_on() {
 
 void switch_led_off() {
   digitalWrite(led1, LOW);
-  writeLED(MIN_BRIGHTNESS);
+  writeLED(BRIGHTNESS_OFF);
   previous_gear = LED_OFF;
   Serial.println("-------------DO NOTHING--------");
   current_gear = DO_NOTHING;
@@ -142,23 +148,30 @@ void checking_button() {
 }
 
 void dimming_led () {
-  Serial.println("Dimming");
+  byte dimming_step = DIMMING_LARGE_STEP;
+  unsigned long dimming_delay = DIMMING_STEP_MS;
+  
+  Serial.println("-------------DIMMING-----------");
   if (previous_gear == LED_ON) {
     while (digitalRead(TOUCH_PIN) == 0) {
+      if (brightness <= BRIGHTNESS_THRESHOLD) {
+        dimming_step = DIMMING_SHORT_STEP;
+        dimming_delay = DIMMING_SHORT_MS;
+      }
       if (dim == DOWN) {
-        brightness = brightness - 5;
+        brightness = brightness - dimming_step;
         if (brightness == MIN_BRIGHTNESS) {
           dim = UP;
+          dimming_delay = DIMMING_MIN_STOP_MS;
         }
       } else if (dim == UP) {
-        brightness = brightness + 5;
+        brightness = brightness + dimming_step;
         if (brightness == MAX_BRIGHTNESS) {
           dim = DOWN;
         }
       }
-      Serial.println(brightness);
       writeLED(brightness);
-      delay(DIMMING_STEP_MS);
+      delay(dimming_delay);
     }
     if (dim == UP) {
       dim = DOWN;
@@ -171,7 +184,6 @@ void dimming_led () {
 }
 
 void writeLED(long bright) {
-  Serial.println(bright);
   analogWrite(LED_DIM, bright);
   send_RGB(bright);
 }
@@ -179,7 +191,7 @@ void writeLED(long bright) {
 void sleep_now()         // here we put the arduino to sleep
 {
   Serial.println("-------------SLEEP NOW---------");
-  delay(100);
+  delay(20);
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);   // sleep mode is set here
   sleep_enable();
   power_timer2_enable();
