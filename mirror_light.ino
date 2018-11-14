@@ -60,14 +60,17 @@ void loop() {
     }
   }
 }
-void setup()
-{
+void setup() {
+  system_init();
   LED_strip_init();
+  enable_touch_interrupt();
+}
+
+void system_init() {
   Serial.begin(9600);
   pinMode(led1, OUTPUT);
   pinMode(TOUCH_PIN, INPUT_PULLUP);
   delay(100);
-  enable_touch_interrupt();
 }
 
 void LED_strip_init() {
@@ -76,7 +79,7 @@ void LED_strip_init() {
   send_RGB(MAX_BRIGHTNESS);  
 }
 
-void send_RGB (byte bright){
+void send_RGB (byte bright) {
   for (byte b = 0; b < 4; b++) {
     sendByte(0x00);
   }
