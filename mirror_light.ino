@@ -78,14 +78,14 @@ void LED_strip_init() {
 
 void send_RGB (byte bright){
   for (byte b = 0; b < 4; b++) {
-    bsendByte(0x00);
+    sendByte(0x00);
   }
-  bsendByte(0xFF);
-  bsendByte(bright);
-  bsendByte(bright);
-  bsendByte(bright);
+  sendByte(0xFF);
+  sendByte(bright);
+  sendByte(bright);
+  sendByte(bright);
   for (byte b = 0; b < 4; b++) {
-    bsendByte(0x00);
+    sendByte(0x00);
   }
   delay(200);
 }
@@ -185,7 +185,7 @@ void sleep_now()         // here we put the arduino to sleep
   Serial.println("-------------WAKING UP---------");
 }
 
-void bsendByte(byte b)
+void sendByte(byte b)
 {
   // Send one bit at a time, starting with the MSB
   for (byte i = 0; i < 8; i++)
@@ -195,14 +195,14 @@ void bsendByte(byte b)
       digitalWrite(LED_DATA, HIGH);
     else
       digitalWrite(LED_DATA, LOW);
-    bclk();
+    clk();
 
     // Advance to the next bit to send
     b <<= 1;
   }
 }
 
-void bclk(void)
+void clk(void)
 {
   digitalWrite(LED_CLK, LOW);
   delayMicroseconds(20);
