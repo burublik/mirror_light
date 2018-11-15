@@ -8,11 +8,11 @@
 #define TOUCH_PIN  2
 #define DEBOUNCE_MS 200
 #define DIMM_DEBOUNCE_MS 1000
-#define DIMMING_LARGE_STEP 5
-#define DIMMING_SHORT_STEP 1
+#define DIMMING_LARGE_STEP 25
+#define DIMMING_SHORT_STEP 10
 #define DIMMING_STEP_MS 20
-#define DIMMING_SHORT_MS 4
-#define DIMMING_MIN_STOP_MS 500
+#define DIMMING_SHORT_MS 1
+#define DIMMING_MIN_STOP_MS 800
 #define LED_DIM 9
 #define BRIGHTNESS_OFF  0
 #define MIN_BRIGHTNESS  10
@@ -154,20 +154,32 @@ void dimming_led () {
   Serial.println("-------------DIMMING-----------");
   if (previous_gear == LED_ON) {
     while (digitalRead(TOUCH_PIN) == 0) {
-      if (brightness <= BRIGHTNESS_THRESHOLD) {
-        dimming_step = DIMMING_SHORT_STEP;
-        dimming_delay = DIMMING_SHORT_MS;
-      }
       if (dim == DOWN) {
+        if (brightness <= BRIGHTNESS_THRESHOLD) {
+          dimming_step = DIMMING_SHORT_STEP;
+          dimming_delay = DIMMING_SHORT_MS;
+        } else {
+          dimming_step = DIMMING_LARGE_STEP;
+          dimming_delay = DIMMING_STEP_MS;
+        }
         brightness = brightness - dimming_step;
-        if (brightness == MIN_BRIGHTNESS) {
+        if (brightness <= MIN_BRIGHTNESS) {
           dim = UP;
+          brightness = MIN_BRIGHTNESS;
           dimming_delay = DIMMING_MIN_STOP_MS;
         }
       } else if (dim == UP) {
+        if (brightness < BRIGHTNESS_THRESHOLD) {
+          dimming_step = DIMMING_SHORT_STEP;
+          dimming_delay = DIMMING_SHORT_MS;
+        } else {
+          dimming_step = DIMMING_LARGE_STEP;
+          dimming_delay = DIMMING_STEP_MS;
+        }
         brightness = brightness + dimming_step;
         if (brightness == MAX_BRIGHTNESS) {
           dim = DOWN;
+          dimming_delay = DIMMING_MIN_STOP_MS;
         }
       }
       writeLED(brightness);
