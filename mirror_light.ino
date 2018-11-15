@@ -12,7 +12,7 @@
 #define DIMMING_SHORT_STEP 10
 #define DIMMING_STEP_MS 20
 #define DIMMING_SHORT_MS 1
-#define DIMMING_MIN_STOP_MS 800
+#define DIMMING_MIN_STOP_MS 1000
 #define LED_DIM 9
 #define BRIGHTNESS_OFF  0
 #define MIN_BRIGHTNESS  10
@@ -232,9 +232,9 @@ void sendByte(byte b)
 void clk(void)
 {
   digitalWrite(LED_CLK, LOW);
-  delayMicroseconds(20);
+  delayMicroseconds(5);
   digitalWrite(LED_CLK, HIGH);
-  delayMicroseconds(20);
+  delayMicroseconds(5);
 }
 
 void enable_touch_interrupt () {
